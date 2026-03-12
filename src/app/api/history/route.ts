@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-// 不需要再导入 DreamEntry，因为我们要让 TS 自动推断
+import { Prisma } from "@prisma/client";
+
+type DreamEntrySubset = Prisma.DreamEntryGetPayload<{
+  select: {
+    id: true;
+    dreamText: true;
+    style: true;
+    createdAt: true;
+  };
+}>;
 
 export async function GET(req: Request) {
   try {
@@ -19,14 +28,11 @@ export async function GET(req: Request) {
         dreamText: true,
         style: true,
         createdAt: true,
-        // 如果数据库里有 resultJson 且你需要它，请在这里加上 resultJson: true
-        // 如果不需要，保持现状即可
       },
     });
 
     return NextResponse.json({
-      // 修复点：移除 (x: DreamEntry)，让 TS 自动推断 x 的类型为 select 返回的子集
-      items: items.map((x) => ({
+      items: items.map((x: DreamEntrySubset) => ({
         id: x.id,
         dreamText: x.dreamText,
         style: x.style,
