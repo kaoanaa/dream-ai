@@ -15,10 +15,12 @@ export async function POST(req: Request) {
       "unknown";
 
     const rl = rateLimit({ key: `interpret:${ip}`, limit: 12, windowMs: 10 * 60 * 1000 });
+    
+    // 修复点：添加 ! 断言，告诉 TS 当 !rl.ok 时 retryAfterSec 一定存在
     if (!rl.ok) {
       return NextResponse.json(
-        { error: `请求过于频繁，请在 ${rl.retryAfterSec} 秒后再试。` },
-        { status: 429, headers: { "Retry-After": String(rl.retryAfterSec) } },
+        { error: `请求过于频繁，请在 ${rl.retryAfterSec!} 秒后再试。` },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfterSec!) } },
       );
     }
 
@@ -101,4 +103,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
